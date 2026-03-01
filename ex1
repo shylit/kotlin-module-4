@@ -1,0 +1,77 @@
+import kotlinx.coroutines.*
+import kotlin.system.measureTimeMillis
+
+data class SourceData(
+    val sourceName: String,
+    val raw: String,
+    val processed: String
+)
+
+suspend fun loadFromSource(
+    name: String,
+    delayMs: Long,
+    fail: Boolean = false
+): String {
+    delay(delayMs)
+    if (fail) error("Источник $name вернул ошибку!")
+    return "data_from_$name"
+}
+
+fun processData(name: String, raw: String): String {
+    return raw.uppercase() + "_PROCESSED_FOR_" + name
+}
+
+fun main() = runBlocking {
+
+    val totalTime = measureTimeMillis {
+        val results: List<SourceData?> = coroutineScope {
+
+            val a = async {
+                try {
+                        val raw = loadFromSource("A", 1800, fail = false)
+                    val processed = processData("A", raw)
+                    SourceData("A", raw, processed)
+                } catch (e: Exception) {
+                    println("Ошибка в источнике A: ${e.message}")
+                    null
+                }
+            }
+
+            val b = async {
+                try {
+                    val raw = loadFromSource("B", 1200, fail = false)
+                    val processed = processData("B", raw)
+                    SourceData("B", raw, processed)
+                } catch (e: Exception) {
+                    println("Ошибка в источнике B: ${e.message}")
+                    null
+                }
+            }
+
+            val c = async {
+                try {
+                    val raw = loadFromSource("C", 2500, fail = false)
+                    val processed = processData("C", raw)
+                    SourceData("C", raw, processed)
+                } catch (e: Exception) {
+                    println("Ошибка в источнике C: ${e.message}")
+                    null
+                }
+            }
+
+            listOf(a.await(), b.await(), c.await())
+        }
+
+        results.filterNotNull().forEach { item ->
+            println("Источник ${item.sourceName}: raw='${item.raw}', processed='${item.processed}'")
+        }
+
+        val combined = results
+            .filterNotNull()
+            .joinToString(separator = " | ") { it.processed }
+
+        println("\nИтоговое объединение: $combined")
+    }
+
+    println("\nОбщее время выполнения: ${totalTime} ms")
+}
