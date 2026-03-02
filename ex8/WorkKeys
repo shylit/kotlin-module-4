@@ -1,0 +1,15 @@
+package com.example.module4_ex8
+
+object WorkKeys {
+    const val KEY_INPUT_PATH = "input_path"
+    const val KEY_OUTPUT_PATH = "output_path"
+    const val KEY_PROGRESS = "progress"
+    const val KEY_ERROR = "error"
+    const val KEY_URL = "url"
+
+    const val TAG_COMPRESS = "step_compress"
+    const val TAG_WATERMARK = "step_watermark"
+    const val TAG_UPLOAD = "step_upload"
+
+    const val UNIQUE_WORK_NAME = "photo_chain_work"
+}
