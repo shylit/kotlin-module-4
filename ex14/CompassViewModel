@@ -23,7 +23,7 @@ class CompassViewModel(app: Application) : AndroidViewModel(app), SensorEventLis
     private val _hasSensor = MutableStateFlow(true)
     val hasSensor: StateFlow<Boolean> = _hasSensor
 
-    // --- Сенсоры ---
+    //Сенсоры
     private val rotationVector: Sensor? =
         sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)
 
