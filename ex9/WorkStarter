@@ -1,0 +1,32 @@
+package com.example.module4_ex9
+
+import androidx.work.*
+
+object WorkStarter {
+
+    fun start(workManager: WorkManager, cities: List<String>) {
+        val cityWorks = cities.map { city ->
+            OneTimeWorkRequestBuilder<WeatherWorker>()
+                .setInputData(workDataOf(WeatherKeys.KEY_CITY to city))
+                .addTag("${WeatherKeys.TAG_CITY_PREFIX}$city")
+                .build()
+        }
+
+        val reportWork = OneTimeWorkRequestBuilder<ReportWorker>()
+            // Чтобы inputData от нескольких prerequisites слились вместе
+            .setInputMerger(OverwritingInputMerger::class)
+            .addTag(WeatherKeys.TAG_REPORT)
+            .build()
+
+        workManager.beginUniqueWork(
+            WeatherKeys.UNIQUE_WORK,
+            ExistingWorkPolicy.REPLACE,
+            cityWorks
+        ).then(reportWork)
+            .enqueue()
+    }
+
+    fun cancel(workManager: WorkManager) {
+        workManager.cancelUniqueWork(WeatherKeys.UNIQUE_WORK)
+    }
+}
