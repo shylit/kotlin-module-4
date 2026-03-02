@@ -1,0 +1,44 @@
+package com.example.module4_ex13
+
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
+import kotlin.random.Random
+
+class CurrencyViewModel : ViewModel() {
+
+    // Внутри — изменяемый, наружу — только чтение
+    private val _rate = MutableStateFlow(91.25) // стартовое значение
+    val rate: StateFlow<Double> = _rate.asStateFlow()
+
+    // Время последнего обновления
+    private val _lastUpdate = MutableStateFlow("--:--:--")
+    val lastUpdate: StateFlow<String> = _lastUpdate.asStateFlow()
+
+    init {
+        // Автообновление раз в 5 секунд
+        viewModelScope.launch {
+            while (true) {
+                delay(5000)
+                generateNewRate()
+            }
+        }
+    }
+
+    fun refreshNow() {
+        generateNewRate()
+    }
+
+    private fun generateNewRate() {
+        val base = 90.5
+        val delta = Random.nextDouble(-2.0, 2.0)
+        val newRate = base + delta
+
+        _rate.value = newRate
+        _lastUpdate.value = java.time.LocalTime.now().withNano(0).toString()
+    }
+}
