@@ -1,0 +1,16 @@
+package com.example.module4_ex9
+
+object WeatherKeys {
+    const val CHANNEL_ID = "weather_channel"
+    const val NOTIF_ID = 1001
+
+    const val UNIQUE_WORK = "weather_unique_work"
+
+    const val KEY_CITY = "city"
+    const val KEY_TEMP = "temp"
+    const val KEY_DESC = "desc"
+    const val KEY_RESULT_PREFIX = "result_" 
+
+    const val TAG_CITY_PREFIX = "city_" 
+    const val TAG_REPORT = "report"
+}
