@@ -1,0 +1,14 @@
+[
+  {"id": 1, "userId": 1, "title": "Красивый закат сегодня", "body": "Смотрите, какой цвет неба...", "avatarUrl": "https://i.pravatar.cc/150?img=1"},
+  {"id": 2, "userId": 2, "title": "Новый кофе-мастер-класс", "body": "Приходите все!", "avatarUrl": "https://i.pravatar.cc/150?img=2"},
+  {"id": 3, "userId": 3, "title": "Пробежка утром", "body": "5 км — и настроение лучше.", "avatarUrl": "https://i.pravatar.cc/150?img=3"},
+  {"id": 4, "userId": 4, "title": "Сдал лабу", "body": "Наконец-то получилось без ошибок.", "avatarUrl": "https://i.pravatar.cc/150?img=4"},
+  {"id": 5, "userId": 5, "title": "Любимый плейлист", "body": "Слушаю и работаю продуктивнее.", "avatarUrl": "https://i.pravatar.cc/150?img=5"},
+  {"id": 6, "userId": 6, "title": "Кино вечером", "body": "Есть идеи, что посмотреть?", "avatarUrl": "https://i.pravatar.cc/150?img=6"},
+  {"id": 7, "userId": 7, "title": "Новый рецепт", "body": "Паста получилась шикарная.", "avatarUrl": "https://i.pravatar.cc/150?img=7"},
+  {"id": 8, "userId": 8, "title": "Учусь Kotlin", "body": "Корутины сначала пугают, потом кайф.", "avatarUrl": "https://i.pravatar.cc/150?img=8"},
+  {"id": 9, "userId": 9, "title": "Выходные планы", "body": "Хочу выбраться на природу.", "avatarUrl": "https://i.pravatar.cc/150?img=9"},
+  {"id": 10, "userId": 10, "title": "Новая игра", "body": "Залип на пару часов незаметно.", "avatarUrl": "https://i.pravatar.cc/150?img=10"},
+  {"id": 11, "userId": 11, "title": "Книга недели", "body": "Читаю и не могу оторваться.", "avatarUrl": "https://i.pravatar.cc/150?img=11"},
+  {"id": 12, "userId": 12, "title": "Музыка в дороге", "body": "С ней поездка короче.", "avatarUrl": "https://i.pravatar.cc/150?img=12"}
+]
