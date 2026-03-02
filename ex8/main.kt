@@ -131,25 +131,7 @@ private fun startPhotoChain(workManager: WorkManager, initialPath: String) {
         .setInputMerger(OverwritingInputMerger::class)
         .build()
 
-    // Важно:
-    // - OverwritingInputMerger позволяет "протащить" outputData прошлого шага как inputData следующего,
-    //   если ключи совпадают. Поэтому в Workers мы возвращаем KEY_OUTPUT_PATH,
-    //   а дальше UI-логика подставит его как KEY_INPUT_PATH через merger.
-    //
-    // НО: чтобы это реально работало просто, мы делаем так:
-    // - compress возвращает KEY_OUTPUT_PATH
-    // - watermark ожидает KEY_INPUT_PATH
-    // => значит нам нужно, чтобы KEY_OUTPUT_PATH стал KEY_INPUT_PATH.
-    //
-    // Чтобы без усложнений, делаем маленький трюк:
-    // в deriveUiStateFromWorkInfos и цепочке — проще руками передавать путь через setInputData нельзя,
-    // так что делаем ещё проще (самый учебный вариант):
-    // watermark и upload будут брать путь из KEY_INPUT_PATH, а мы будем возвращать и KEY_INPUT_PATH тоже.
-
-    // Поэтому: переделываем цепочку правильно — так, чтобы каждый шаг возвращал KEY_INPUT_PATH.
-    // Для этого достаточно заменить в Workers Result.success(...) на KEY_INPUT_PATH.
-    //
-    // В этом коде я ниже покажу, как должно быть в Workers (см. блок "ВАЖНО").
+    
 
     // Запуск как UNIQUE: если нажали ещё раз — старая цепочка отменится и заменится
     workManager.enqueueUniqueWork(
@@ -167,13 +149,7 @@ private fun startPhotoChain(workManager: WorkManager, initialPath: String) {
         .enqueue()
 }
 
-/**
- * ВАЖНО (упрощение для учебной):
- * Чтобы шаг2 и шаг3 получили путь "из прошлого шага" без лишней магии:
- * - в CompressWorker нужно возвращать workDataOf(KEY_INPUT_PATH to outPath)
- * - в WatermarkWorker то же самое
- * Тогда OverwritingInputMerger всё сделает: выход прошлого шага становится входом следующего.
- */
+
 
 private fun deriveUiStateFromWorkInfos(workInfos: List<WorkInfo>): UiState {
     // По умолчанию
