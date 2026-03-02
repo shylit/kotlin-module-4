@@ -1,0 +1,40 @@
+package com.example.module4_ex8
+
+import android.content.Context
+import androidx.work.CoroutineWorker
+import androidx.work.WorkerParameters
+import androidx.work.workDataOf
+import kotlinx.coroutines.delay
+import java.io.File
+
+class CompressWorker(
+    appContext: Context,
+    params: WorkerParameters
+) : CoroutineWorker(appContext, params) {
+
+    override suspend fun doWork(): Result {
+        return try {
+            val inputPath = inputData.getString(WorkKeys.KEY_INPUT_PATH)
+                ?: return Result.failure(workDataOf(WorkKeys.KEY_ERROR to "Не передан путь к фото"))
+
+            val inputFile = File(inputPath)
+            if (!inputFile.exists()) {
+                return Result.failure(workDataOf(WorkKeys.KEY_ERROR to "Файл не найден: $inputPath"))
+            }
+
+            // Имитация прогресса 0..100
+            for (p in 0..100 step 10) {
+                setProgress(workDataOf(WorkKeys.KEY_PROGRESS to p))
+                delay(120)
+            }
+
+            // "Сжимаем" = просто копируем файл в новый
+            val outFile = File(applicationContext.cacheDir, "photo_compressed_${System.currentTimeMillis()}.jpg")
+            inputFile.copyTo(outFile, overwrite = true)
+
+            Result.success(workDataOf(WorkKeys.KEY_INPUT_PATH to outFile.absolutePath))
+        } catch (e: Exception) {
+            Result.failure(workDataOf(WorkKeys.KEY_ERROR to (e.message ?: "Ошибка сжатия")))
+        }
+    }
+}
