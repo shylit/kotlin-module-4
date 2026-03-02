@@ -15,7 +15,7 @@ class MainActivity : ComponentActivity() {
 
     private var service: RandomNumberService? = null
 
-    // ✅ теперь Compose будет замечать изменения
+    // теперь Compose будет замечать изменения
     private var isBound by mutableStateOf(false)
 
     private val connection = object : ServiceConnection {
@@ -36,7 +36,7 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             MaterialTheme {
-                // ✅ если сервис подключён — слушаем его flow
+                // если сервис подключён — слушаем его flow
                 val number by if (isBound && service != null) {
                     service!!.number.collectAsState(initial = null)
                 } else {
