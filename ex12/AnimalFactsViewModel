@@ -1,0 +1,50 @@
+package com.example.module4_ex12
+
+import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.ViewModel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
+import kotlin.random.Random
+
+class AnimalFactsViewModel(
+    private val savedStateHandle: SavedStateHandle
+) : ViewModel() {
+
+    companion object {
+        private const val KEY_FACT = "key_fact"
+    }
+
+    // Текущий факт (храним, чтобы при повороте не “пропал”)
+    var currentFact: String?
+        get() = savedStateHandle.get<String>(KEY_FACT)
+        private set(value) {
+            savedStateHandle[KEY_FACT] = value
+        }
+    private val facts = listOf(
+        "Слоны — единственные животные, которые не умеют прыгать.",
+        "Осьминоги имеют три сердца.",
+        "У улитки может быть до 25 000 зубов.",
+        "Коровы могут иметь лучших друзей и стрессовать при разлуке.",
+        "Дельфины спят, отключая половину мозга.",
+        "У жирафа и человека одинаковое количество шейных позвонков — 7.",
+        "Пингвины делают «предложение» камешком.",
+        "У кошек нет вкуса к сладкому.",
+        "Акулы существовали раньше деревьев.",
+        "У пчёл есть «танец», которым они показывают путь к цветам.",
+        "Крокодилы не могут высунуть язык.",
+        "У выдры есть “любимый” камень для раскалывания ракушек.",
+        "У собак отпечаток носа уникален, как отпечаток пальца у человека.",
+        "У морской звезды нет мозга в привычном смысле.",
+        "Фламинго розовые из-за пищи (каротиноидов)."
+    )
+
+
+    fun getRandomFact(): Flow<String> = flow {
+        delay(Random.nextLong(1500L, 3001L))
+
+        val fact = facts.random()
+        currentFact = fact // сохраняем, чтобы пережить поворот
+        emit(fact)
+    }
+}
