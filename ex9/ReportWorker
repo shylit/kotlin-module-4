@@ -1,0 +1,93 @@
+package com.example.module4_ex9
+
+import android.content.Context
+import android.content.pm.ServiceInfo
+import android.os.Build
+import androidx.core.app.NotificationManagerCompat
+import androidx.work.CoroutineWorker
+import androidx.work.ForegroundInfo
+import androidx.work.WorkerParameters
+import androidx.work.workDataOf
+import kotlinx.coroutines.delay
+
+class ReportWorker(
+    appContext: Context,
+    params: WorkerParameters
+) : CoroutineWorker(appContext, params) {
+
+    override suspend fun doWork(): Result {
+        NotificationHelper.ensureChannel(applicationContext)
+
+        //Пишем “все данные получены…”
+        setForeground(createForeground("Прогноз погоды", "Все данные получены, формируем отчёт…", 0))
+        updateOngoing("Прогноз погоды", "Все данные получены, формируем отчёт…", 0)
+
+        delay(1200)
+
+        
+        val cities = listOf("Москва", "Лондон", "Нью-Йорк")
+
+        val results = mutableListOf<Triple<String, Int, String>>()
+
+        for (city in cities) {
+            val packed = inputData.getString("${WeatherKeys.KEY_RESULT_PREFIX}$city")
+            if (packed == null) {
+                // Если чего-то не хватило — ошибка
+                updateDone("Прогноз погоды", "Ошибка: не все данные получены")
+                return Result.failure(workDataOf("error" to "Не все данные получены"))
+            }
+
+            val parts = packed.split("|")
+            val c = parts.getOrNull(0) ?: city
+            val t = parts.getOrNull(1)?.toIntOrNull() ?: 0
+            val d = parts.getOrNull(2) ?: "неизвестно"
+            results.add(Triple(c, t, d))
+        }
+
+        //Средняя температура
+        val avg = results.map { it.second }.average()
+        val avgRounded = avg.toInt()
+
+        //Итоговый отчёт текстом
+        val report = buildString {
+            append("Итоговый прогноз:\n")
+            results.forEach { (c, t, d) ->
+                append("$c: $t°C, $d\n")
+            }
+            append("\nСредняя температура: $avgRounded°C")
+        }
+
+        //Финальное уведомление (уже НЕ ongoing)
+        updateDone("Прогноз погоды", "Отчёт готов! Средняя температура $avgRounded°C")
+
+        return Result.success(
+            workDataOf(
+                "report" to report,
+                "avg" to avgRounded
+            )
+        )
+    }
+
+    private fun createForeground(title: String, text: String, progress: Int): ForegroundInfo {
+        val notif = NotificationHelper.buildOngoing(applicationContext, title, text, progress)
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            ForegroundInfo(
+                WeatherKeys.NOTIF_ID,
+                notif,
+                ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC
+            )
+        } else {
+            ForegroundInfo(WeatherKeys.NOTIF_ID, notif)
+        }
+    }
+
+    private fun updateOngoing(title: String, text: String, progress: Int) {
+        val nm = NotificationManagerCompat.from(applicationContext)
+        nm.notify(WeatherKeys.NOTIF_ID, NotificationHelper.buildOngoing(applicationContext, title, text, progress))
+    }
+
+    private fun updateDone(title: String, text: String) {
+        val nm = NotificationManagerCompat.from(applicationContext)
+        nm.notify(WeatherKeys.NOTIF_ID, NotificationHelper.buildDone(applicationContext, title, text))
+    }
+}
