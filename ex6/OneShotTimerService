@@ -39,7 +39,7 @@ class OneShotTimerService : Service() {
         job = scope.launch {
             delay(seconds * 1000L)
             showFinishedNotification()
-            stopSelf() // сервис сам себя выключает ✅
+            stopSelf() // сервис сам себя выключает
         }
 
         return START_NOT_STICKY
