@@ -1,0 +1,77 @@
+package com.example.module4_ex9
+
+import android.content.Context
+import android.content.pm.ServiceInfo
+import android.os.Build
+import androidx.core.app.NotificationManagerCompat
+import androidx.work.CoroutineWorker
+import androidx.work.ForegroundInfo
+import androidx.work.WorkerParameters
+import androidx.work.workDataOf
+import kotlinx.coroutines.delay
+import kotlin.random.Random
+
+class WeatherWorker(
+    appContext: Context,
+    params: WorkerParameters
+) : CoroutineWorker(appContext, params) {
+
+    override suspend fun doWork(): Result {
+        NotificationHelper.ensureChannel(applicationContext)
+
+        val city = inputData.getString(WeatherKeys.KEY_CITY)
+            ?: return Result.failure()
+
+        //Сразу включаем foreground с правильным типом
+        setForeground(createForeground("Прогноз погоды", "Загружаем погоду для городов…", 0))
+
+        //Имитация загрузки: каждые ~0.6 сек обновляем прогресс и уведомление
+        var progress = 0
+        while (progress < 100) {
+            if (isStopped) return Result.failure() // если отменили работу
+
+            delay(600)
+            progress += 10
+
+            val text = "Загрузка: $city…"
+            updateNotification("Прогноз погоды", text, progress)
+
+            //обновляем и foreground (WorkManager держит сервис)
+            setForeground(createForeground("Прогноз погоды", text, progress))
+        }
+
+        //“Данные погоды” (рандом)
+        val temp = Random.nextInt(-10, 26)
+        val desc = listOf("ясно", "дождь", "облачно").random()
+
+        //Сообщаем что этот город готов
+        updateNotification("Прогноз погоды", "Готово: $city ($temp°C, $desc)", 100)
+
+        //Возвращаем результат под уникальным ключом, чтобы merger не перезаписал другие города
+        val packed = "$city|$temp|$desc"
+        return Result.success(
+            workDataOf("${WeatherKeys.KEY_RESULT_PREFIX}$city" to packed)
+        )
+    }
+
+    private fun createForeground(title: String, text: String, progress: Int): ForegroundInfo {
+        val notif = NotificationHelper.buildOngoing(applicationContext, title, text, progress)
+        
+        // указываем тип foreground service (DATA_SYNC)
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            ForegroundInfo(
+                WeatherKeys.NOTIF_ID,
+                notif,
+                ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC
+            )
+        } else {
+            ForegroundInfo(WeatherKeys.NOTIF_ID, notif)
+        }
+    }
+
+    private fun updateNotification(title: String, text: String, progress: Int) {
+        val nm = NotificationManagerCompat.from(applicationContext)
+        val notif = NotificationHelper.buildOngoing(applicationContext, title, text, progress)
+        nm.notify(WeatherKeys.NOTIF_ID, notif)
+    }
+}
