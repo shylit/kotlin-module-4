@@ -135,7 +135,7 @@ private fun CompassDial(azimuthDeg: Float) {
                 end = Offset(center.x, center.y - arrowLen),
                 strokeWidth = stroke
             )
-            // Серая/чёрная часть (на юг) - вниз
+            // Серая часть (на юг) - вниз
             drawLine(
                 color = Color(0xFF555555),
                 start = center,
@@ -145,11 +145,6 @@ private fun CompassDial(azimuthDeg: Float) {
         }
     }
 }
-
-/**
- * Возвращает новый угол, который идёт к "to" по кратчайшему пути относительно "from".
- * Например: from=-359, to=-1 => лучше повернуть на +358? нет, лучше на +? делаем нормализацию.
- */
 private fun shortestAngle(from: Float, to: Float): Float {
     var delta = (to - from) % 360f
     if (delta > 180f) delta -= 360f
