@@ -1,0 +1,78 @@
+package com.example.module4_ex6
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.Service
+import android.content.Intent
+import android.os.Build
+import android.os.IBinder
+import androidx.core.app.NotificationCompat
+import kotlinx.coroutines.*
+
+class OneShotTimerService : Service() {
+
+    companion object {
+        const val EXTRA_SECONDS = "EXTRA_SECONDS"
+        const val CHANNEL_ID = "oneshot_timer_channel"
+        const val NOTIF_ID = 100
+    }
+
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+    private var job: Job? = null
+
+    override fun onBind(intent: Intent?): IBinder? = null
+
+    override fun onCreate() {
+        super.onCreate()
+        createChannel()
+    }
+
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        val seconds = intent?.getIntExtra(EXTRA_SECONDS, 0) ?: 0
+        if (seconds <= 0) {
+            stopSelf()
+            return START_NOT_STICKY
+        }
+
+        // если таймер уже был запущен — перезапускаем
+        job?.cancel()
+
+        job = scope.launch {
+            delay(seconds * 1000L)
+            showFinishedNotification()
+            stopSelf() // сервис сам себя выключает ✅
+        }
+
+        return START_NOT_STICKY
+    }
+
+    private fun showFinishedNotification() {
+        val nm = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+
+        val notification = NotificationCompat.Builder(this, CHANNEL_ID)
+            .setSmallIcon(android.R.drawable.ic_dialog_info)
+            .setContentTitle("Таймер завершён!")
+            .setContentText("Время вышло")
+            .setAutoCancel(true)
+            .build()
+
+        nm.notify(NOTIF_ID, notification)
+    }
+
+    private fun createChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(
+                CHANNEL_ID,
+                "One-shot timer",
+                NotificationManager.IMPORTANCE_DEFAULT
+            )
+            val nm = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+            nm.createNotificationChannel(channel)
+        }
+    }
+
+    override fun onDestroy() {
+        job?.cancel()
+        scope.cancel()
+        super.onDestroy()
+    }
+}
