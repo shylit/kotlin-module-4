@@ -1,0 +1,43 @@
+package com.example.module4_ex8
+
+import android.content.Context
+import androidx.work.CoroutineWorker
+import androidx.work.WorkerParameters
+import androidx.work.workDataOf
+import kotlinx.coroutines.delay
+import java.io.File
+
+class UploadWorker(
+    appContext: Context,
+    params: WorkerParameters
+) : CoroutineWorker(appContext, params) {
+
+    override suspend fun doWork(): Result {
+        return try {
+            val inputPath = inputData.getString(WorkKeys.KEY_INPUT_PATH)
+                ?: return Result.failure(workDataOf(WorkKeys.KEY_ERROR to "Не передан путь для загрузки"))
+
+            val inputFile = File(inputPath)
+            if (!inputFile.exists()) {
+                return Result.failure(workDataOf(WorkKeys.KEY_ERROR to "Файл не найден: $inputPath"))
+            }
+
+            for (p in 0..100 step 10) {
+                setProgress(workDataOf(WorkKeys.KEY_PROGRESS to p))
+                delay(150)
+            }
+
+            // "Загрузка в облако" = имитация: делаем "ссылку"
+            val fakeUrl = "https://cloud.example.com/uploaded_${System.currentTimeMillis()}.jpg"
+
+            Result.success(
+                workDataOf(
+                    WorkKeys.KEY_URL to fakeUrl,
+                    WorkKeys.KEY_OUTPUT_PATH to inputFile.absolutePath
+                )
+            )
+        } catch (e: Exception) {
+            Result.failure(workDataOf(WorkKeys.KEY_ERROR to (e.message ?: "Ошибка загрузки")))
+        }
+    }
+}
